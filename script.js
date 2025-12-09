@@ -33,7 +33,6 @@ const galleryImages = [
     'images/photo_2025-12-06_20-24-37.jpg',
     'images/photo_2025-12-06_20-24-39.jpg',
     'images/photo_2025-12-06_20-24-44.jpg',
-    'images/photo_2025-12-06_20-24-47 (2).jpg',
     'images/photo_2025-12-06_20-24-47.jpg',
     'images/photo_2025-12-06_20-24-49.jpg',
     'images/photo_2025-12-06_20-24-55.jpg',
