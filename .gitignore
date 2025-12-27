@@ -1,0 +1,17 @@
+# Конфігурація з токеном (якщо ви хочете зберігати токен локально)
+# config.local.js
+# config.js - додано до gitignore для безпеки (якщо потрібно)
+
+# Node modules (якщо використовуєте)
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
