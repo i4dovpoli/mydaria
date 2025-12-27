@@ -3,70 +3,70 @@ const PASSWORD = '';
 
 // Базовий масив зображень
 const BASE_IMAGES = [
-        'images/IMG_7611.JPG',
-        'images/photo_2025-06-14_23-16-25 (2).jpg',
-        'images/photo_2025-06-14_23-16-25.jpg',
-        'images/photo_2025-06-14_23-16-28.jpg',
-        'images/photo_2025-07-19_19-28-12.jpg',
-        'images/photo_2025-07-19_19-28-18.jpg',
-        'images/photo_2025-09-12_14-42-22.jpg',
-        'images/photo_2025-09-29_14-08-59.jpg',
-        'images/photo_2025-10-07_11-21-57.jpg',
-        'images/photo_2025-10-07_19-03-44.jpg',
-        'images/photo_2025-10-07_19-11-35.jpg',
-        'images/photo_2025-11-17_00-38-28.jpg',
-        'images/photo_2025-11-28_23-38-26.jpg',
-        'images/photo_2025-12-04_19-19-55.jpg',
-        'images/photo_2025-12-06_20-10-26.jpg',
-        'images/photo_2025-12-06_20-12-09.jpg',
-        'images/photo_2025-12-06_20-13-07.jpg',
-        'images/photo_2025-12-06_20-16-34.jpg',
-        'images/photo_2025-12-06_20-19-39.jpg',
-        'images/photo_2025-12-06_20-24-11.jpg',
-        'images/photo_2025-12-06_20-24-13.jpg',
-        'images/photo_2025-12-06_20-24-16.jpg',
-        'images/photo_2025-12-06_20-24-18.jpg',
-        'images/photo_2025-12-06_20-24-19.jpg',
-        'images/photo_2025-12-06_20-24-22.jpg',
-        'images/photo_2025-12-06_20-24-24.jpg',
-        'images/photo_2025-12-06_20-24-25.jpg',
-        'images/photo_2025-12-06_20-24-27.jpg',
-        'images/photo_2025-12-06_20-24-30.jpg',
-        'images/photo_2025-12-06_20-24-31.jpg',
-        'images/photo_2025-12-06_20-24-35.jpg',
-        'images/photo_2025-12-06_20-24-37.jpg',
-        'images/photo_2025-12-06_20-24-39.jpg',
-        'images/photo_2025-12-06_20-24-44.jpg',
+    'images/IMG_7611.JPG',
+    'images/photo_2025-06-14_23-16-25 (2).jpg',
+    'images/photo_2025-06-14_23-16-25.jpg',
+    'images/photo_2025-06-14_23-16-28.jpg',
+    'images/photo_2025-07-19_19-28-12.jpg',
+    'images/photo_2025-07-19_19-28-18.jpg',
+    'images/photo_2025-09-12_14-42-22.jpg',
+    'images/photo_2025-09-29_14-08-59.jpg',
+    'images/photo_2025-10-07_11-21-57.jpg',
+    'images/photo_2025-10-07_19-03-44.jpg',
+    'images/photo_2025-10-07_19-11-35.jpg',
+    'images/photo_2025-11-17_00-38-28.jpg',
+    'images/photo_2025-11-28_23-38-26.jpg',
+    'images/photo_2025-12-04_19-19-55.jpg',
+    'images/photo_2025-12-06_20-10-26.jpg',
+    'images/photo_2025-12-06_20-12-09.jpg',
+    'images/photo_2025-12-06_20-13-07.jpg',
+    'images/photo_2025-12-06_20-16-34.jpg',
+    'images/photo_2025-12-06_20-19-39.jpg',
+    'images/photo_2025-12-06_20-24-11.jpg',
+    'images/photo_2025-12-06_20-24-13.jpg',
+    'images/photo_2025-12-06_20-24-16.jpg',
+    'images/photo_2025-12-06_20-24-18.jpg',
+    'images/photo_2025-12-06_20-24-19.jpg',
+    'images/photo_2025-12-06_20-24-22.jpg',
+    'images/photo_2025-12-06_20-24-24.jpg',
+    'images/photo_2025-12-06_20-24-25.jpg',
+    'images/photo_2025-12-06_20-24-27.jpg',
+    'images/photo_2025-12-06_20-24-30.jpg',
+    'images/photo_2025-12-06_20-24-31.jpg',
+    'images/photo_2025-12-06_20-24-35.jpg',
+    'images/photo_2025-12-06_20-24-37.jpg',
+    'images/photo_2025-12-06_20-24-39.jpg',
+    'images/photo_2025-12-06_20-24-44.jpg',
         'images/photo_2025-12-06_20-24-47 (2).jpg',
-        'images/photo_2025-12-06_20-24-47.jpg',
-        'images/photo_2025-12-06_20-24-49.jpg',
-        'images/photo_2025-12-06_20-24-55.jpg',
-        'images/photo_2025-12-06_20-24-56.jpg',
-        'images/photo_2025-12-06_20-25-04.jpg',
-        'images/photo_2025-12-06_20-25-06.jpg',
-        'images/photo_2025-12-06_20-25-09.jpg',
-        'images/photo_2025-12-06_20-25-12.jpg',
-        'images/photo_2025-12-06_20-25-14.jpg',
-        'images/photo_2025-12-06_20-25-21.jpg',
-        'images/photo_2025-12-06_20-25-30.jpg',
-        'images/photo_2025-12-06_20-25-32.jpg',
-        'images/photo_2025-12-06_20-26-10.jpg',
+    'images/photo_2025-12-06_20-24-47.jpg',
+    'images/photo_2025-12-06_20-24-49.jpg',
+    'images/photo_2025-12-06_20-24-55.jpg',
+    'images/photo_2025-12-06_20-24-56.jpg',
+    'images/photo_2025-12-06_20-25-04.jpg',
+    'images/photo_2025-12-06_20-25-06.jpg',
+    'images/photo_2025-12-06_20-25-09.jpg',
+    'images/photo_2025-12-06_20-25-12.jpg',
+    'images/photo_2025-12-06_20-25-14.jpg',
+    'images/photo_2025-12-06_20-25-21.jpg',
+    'images/photo_2025-12-06_20-25-30.jpg',
+    'images/photo_2025-12-06_20-25-32.jpg',
+    'images/photo_2025-12-06_20-26-10.jpg',
         'images/photo_2025-12-06_20-37-37 (2).jpg',
-        'images/photo_2025-12-06_20-37-37.jpg',
-        'images/photo_2025-12-06_20-38-32.jpg',
-        'images/photo_2025-12-06_20-40-40.jpg',
-        'images/photo_2025-12-06_20-40-43.jpg',
-        'images/photo_2025-12-06_20-40-50.jpg',
-        'images/photo_2025-12-06_20-41-03.jpg',
-        'images/photo_2025-12-06_20-44-29.jpg',
-        'images/photo_2025-12-06_20-44-30.jpg',
-        'images/photo_2025-12-06_20-44-32.jpg',
-        'images/photo_2025-12-06_21-02-51.jpg',
-        'images/photo_2025-12-06_21-28-10.jpg',
-        'images/photo_2025-12-07_21-08-36.jpg',
-        'images/photo_2025-12-09_18-04-09.jpg',
-        'images/photo_2025-12-09_20-37-30.jpg',
-        'images/photo_2025-12-24_21-22-34.jpg',
+    'images/photo_2025-12-06_20-37-37.jpg',
+    'images/photo_2025-12-06_20-38-32.jpg',
+    'images/photo_2025-12-06_20-40-40.jpg',
+    'images/photo_2025-12-06_20-40-43.jpg',
+    'images/photo_2025-12-06_20-40-50.jpg',
+    'images/photo_2025-12-06_20-41-03.jpg',
+    'images/photo_2025-12-06_20-44-29.jpg',
+    'images/photo_2025-12-06_20-44-30.jpg',
+    'images/photo_2025-12-06_20-44-32.jpg',
+    'images/photo_2025-12-06_21-02-51.jpg',
+    'images/photo_2025-12-06_21-28-10.jpg',
+    'images/photo_2025-12-07_21-08-36.jpg',
+    'images/photo_2025-12-09_18-04-09.jpg',
+    'images/photo_2025-12-09_20-37-30.jpg',
+    'images/photo_2025-12-24_21-22-34.jpg',
         'images/photo_2025-12-25_22-26-25.jpg',
         // Додаткові фото з папки image
         'image/photo_2025-12-06_20-39-42.jpg',
@@ -304,14 +304,57 @@ async function loadGalleryImages() {
     }
 }
 
+// Функція для перевірки прав токену
+async function checkTokenPermissions() {
+    if (typeof GITHUB_CONFIG === 'undefined' || !GITHUB_CONFIG || !GITHUB_CONFIG.GITHUB_TOKEN) {
+        return { hasRepo: false, hasGist: false };
+    }
+    
+    try {
+        // Перевіряємо права через спробу отримати інформацію про репозиторій
+        if (GITHUB_CONFIG.REPO_OWNER && GITHUB_CONFIG.REPO_NAME) {
+            const repoUrl = `https://api.github.com/repos/${GITHUB_CONFIG.REPO_OWNER}/${GITHUB_CONFIG.REPO_NAME}`;
+            const repoResponse = await fetch(repoUrl, {
+                headers: {
+                    'Authorization': `token ${GITHUB_CONFIG.GITHUB_TOKEN}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            // Якщо можемо отримати репозиторій, перевіряємо права на запис
+            if (repoResponse.ok) {
+                const scriptUrl = `https://api.github.com/repos/${GITHUB_CONFIG.REPO_OWNER}/${GITHUB_CONFIG.REPO_NAME}/contents/script.js`;
+                const scriptResponse = await fetch(scriptUrl, {
+                    headers: {
+                        'Authorization': `token ${GITHUB_CONFIG.GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                return { hasRepo: scriptResponse.ok, hasGist: true };
+            }
+        }
+    } catch (error) {
+        console.error('Помилка перевірки прав токену:', error);
+    }
+    
+    return { hasRepo: false, hasGist: true };
+}
+
 // Функція для оновлення script.js в GitHub репозиторії
 async function updateScriptJsInGitHub(newImages) {
     if (typeof GITHUB_CONFIG === 'undefined' || !GITHUB_CONFIG || !GITHUB_CONFIG.GITHUB_TOKEN) {
+        console.log('⚠️ Токен не налаштовано');
         return false;
     }
     
     if (!GITHUB_CONFIG.REPO_OWNER || !GITHUB_CONFIG.REPO_NAME) {
         console.log('⚠️ Налаштування репозиторію не вказано, пропускаємо оновлення script.js');
+        return false;
+    }
+    
+    if (newImages.length === 0) {
+        console.log('⚠️ Немає нових фото для додавання');
         return false;
     }
     
@@ -327,24 +370,34 @@ async function updateScriptJsInGitHub(newImages) {
         });
         
         if (!getResponse.ok) {
-            console.error('Не вдалося отримати script.js з GitHub. Перевірте права токену (потрібні права: repo)');
+            const error = await getResponse.json().catch(() => ({}));
+            console.error('❌ Не вдалося отримати script.js з GitHub:', getResponse.status, error.message || '');
+            console.error('💡 Перевірте, що токен має права "repo" (повний доступ до репозиторію)');
             return false;
         }
         
         const fileData = await getResponse.json();
-        // Декодуємо base64 контент (GitHub API повертає контент з переносами рядків)
+        
+        // Декодуємо base64 контент
         let currentContent = '';
         try {
-            currentContent = decodeURIComponent(escape(atob(fileData.content.replace(/\s/g, ''))));
+            // GitHub API повертає контент в base64, але з переносами рядків
+            const base64Content = fileData.content.replace(/\n/g, '').replace(/\s/g, '');
+            currentContent = decodeURIComponent(escape(atob(base64Content)));
         } catch (e) {
             // Якщо не вдалося, спробуємо без заміни пробілів
-            currentContent = decodeURIComponent(escape(atob(fileData.content)));
+            try {
+                currentContent = decodeURIComponent(escape(atob(fileData.content)));
+            } catch (e2) {
+                console.error('Помилка декодування файлу:', e2);
+                return false;
+            }
         }
         
         // Знаходимо масив BASE_IMAGES та додаємо нові фото
         const baseImagesMatch = currentContent.match(/const BASE_IMAGES = \[([\s\S]*?)\];/);
         if (!baseImagesMatch) {
-            console.error('Не вдалося знайти BASE_IMAGES в script.js');
+            console.error('❌ Не вдалося знайти BASE_IMAGES в script.js');
             return false;
         }
         
@@ -352,17 +405,23 @@ async function updateScriptJsInGitHub(newImages) {
         const existingImages = baseImagesMatch[1]
             .split('\n')
             .map(line => line.trim())
-            .filter(line => line && !line.startsWith('//'))
+            .filter(line => line && !line.startsWith('//') && !line.startsWith('*'))
             .map(line => {
-                const match = line.match(/['"]([^'"]+)['"]/);
+                // Шукаємо рядки з 'images/...' або 'image/...'
+                const match = line.match(/['"](images\/[^'"]+|image\/[^'"]+)['"]/);
                 return match ? match[1] : null;
             })
             .filter(img => img !== null);
         
+        console.log('📸 Знайдено існуючих фото в BASE_IMAGES:', existingImages.length);
+        console.log('➕ Додаємо нових фото:', newImages.length);
+        
         // Додаємо нові фото (які ще не є в списку)
         const allImages = [...new Set([...existingImages, ...newImages])];
         
-        // Формуємо новий масив
+        console.log('📊 Всього фото після об\'єднання:', allImages.length);
+        
+        // Формуємо новий масив (зберігаємо форматування)
         const newBaseImagesArray = allImages.map(img => `        '${img}'`).join(',\n');
         const newContent = currentContent.replace(
             /const BASE_IMAGES = \[[\s\S]*?\];/,
@@ -389,15 +448,22 @@ async function updateScriptJsInGitHub(newImages) {
         });
         
         if (updateResponse.ok) {
-            console.log('✅ script.js оновлено в GitHub репозиторії');
+            const result = await updateResponse.json();
+            console.log('✅ script.js успішно оновлено в GitHub репозиторії!');
+            console.log('📝 Commit:', result.commit.html_url);
             return true;
         } else {
             const error = await updateResponse.json();
-            console.error('Помилка оновлення script.js:', error);
+            console.error('❌ Помилка оновлення script.js:', error.message || '');
+            if (error.message && error.message.includes('Bad credentials')) {
+                console.error('💡 Перевірте правильність токену');
+            } else if (error.message && error.message.includes('insufficient_scope')) {
+                console.error('💡 Токен не має прав "repo". Створіть новий токен з правами "repo"');
+            }
             return false;
         }
     } catch (error) {
-        console.error('Помилка оновлення script.js:', error);
+        console.error('❌ Помилка оновлення script.js:', error);
         return false;
     }
 }
@@ -513,7 +579,7 @@ function createGalleryItem(src, index) {
     img.src = src;
     img.alt = 'Фото Дашеньки';
     img.loading = 'lazy';
-    
+
     img.onerror = function() {
         item.style.display = 'none';
     };
@@ -577,8 +643,8 @@ document.addEventListener('keydown', (e) => {
     // Модальне вікно зображення
     if (modal.classList.contains('show')) {
         if (e.key === 'Escape') closeImageModal();
-        if (e.key === 'ArrowRight') nextBtn.click();
-        if (e.key === 'ArrowLeft') prevBtn.click();
+    if (e.key === 'ArrowRight') nextBtn.click();
+    if (e.key === 'ArrowLeft') prevBtn.click();
         return;
     }
     
