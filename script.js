@@ -58,7 +58,10 @@ const galleryImages = [
     'images/photo_2025-12-06_21-02-51.jpg',
     'images/photo_2025-12-06_21-28-10.jpg',
     'images/photo_2025-12-07_21-08-36.jpg',
-    'images/photo_2025-12-09_18-04-09.jpg'
+    'images/photo_2025-12-09_18-04-09.jpg',
+    'images/photo_2025-12-09_20-37-30.jpg',
+    'images/photo_2025-12-24_21-22-34.jpg',
+    'images/photo_2025-12-25_22-26-25.jpg
 ];
 
 let currentImageIndex = 0;
