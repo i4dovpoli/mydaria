@@ -37,6 +37,7 @@ const BASE_IMAGES = [
         'images/photo_2025-12-06_20-24-37.jpg',
         'images/photo_2025-12-06_20-24-39.jpg',
         'images/photo_2025-12-06_20-24-44.jpg',
+        'images/photo_2025-12-06_20-24-47 (2).jpg',
         'images/photo_2025-12-06_20-24-47.jpg',
         'images/photo_2025-12-06_20-24-49.jpg',
         'images/photo_2025-12-06_20-24-55.jpg',
@@ -50,6 +51,7 @@ const BASE_IMAGES = [
         'images/photo_2025-12-06_20-25-30.jpg',
         'images/photo_2025-12-06_20-25-32.jpg',
         'images/photo_2025-12-06_20-26-10.jpg',
+        'images/photo_2025-12-06_20-37-37 (2).jpg',
         'images/photo_2025-12-06_20-37-37.jpg',
         'images/photo_2025-12-06_20-38-32.jpg',
         'images/photo_2025-12-06_20-40-40.jpg',
@@ -62,7 +64,10 @@ const BASE_IMAGES = [
         'images/photo_2025-12-06_21-02-51.jpg',
         'images/photo_2025-12-06_21-28-10.jpg',
         'images/photo_2025-12-07_21-08-36.jpg',
-        'images/photo_2025-12-09_18-04-09.jpg'
+        'images/photo_2025-12-09_18-04-09.jpg',
+        'images/photo_2025-12-09_20-37-30.jpg',
+        'images/photo_2025-12-24_21-22-34.jpg',
+        'images/photo_2025-12-25_22-26-25.jpg'
 ];
 
 // Функція для пошуку існуючого Gist
