@@ -10,6 +10,8 @@ var GITHUB_CONFIG = {
     GITHUB_TOKEN: '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',
     
     // ID вашого Gist (буде створено автоматично при першому використанні)
+    // Після першого завантаження фото, ID збережеться тут автоматично
+    // Або можете вставити вручну після першого створення Gist
     GIST_ID: (typeof localStorage !== 'undefined' ? localStorage.getItem('galleryGistId') : null) || '',
     
     // Ім'я файлу в Gist
