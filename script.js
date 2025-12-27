@@ -470,12 +470,40 @@ async function updateScriptJsInGitHub(newImages) {
 
 // Функція для збереження зображень у GitHub Gist
 async function saveGalleryImagesToGist(images) {
-    if (typeof GITHUB_CONFIG === 'undefined' || !GITHUB_CONFIG || !GITHUB_CONFIG.GITHUB_TOKEN) {
+    // Детальна перевірка токену
+    if (typeof GITHUB_CONFIG === 'undefined') {
+        console.error('❌ GITHUB_CONFIG не визначено. Перевірте, чи завантажився config.js');
+        console.error('💡 Оновіть сторінку (Ctrl+F5 або Cmd+Shift+R)');
+        const uploadedImages = images.filter(img => !BASE_IMAGES.includes(img));
+        localStorage.setItem('galleryImages', JSON.stringify(uploadedImages));
+        return false;
+    }
+    
+    if (!GITHUB_CONFIG) {
+        console.error('❌ GITHUB_CONFIG порожній');
+        const uploadedImages = images.filter(img => !BASE_IMAGES.includes(img));
+        localStorage.setItem('galleryImages', JSON.stringify(uploadedImages));
+        return false;
+    }
+    
+    if (!GITHUB_CONFIG.GITHUB_TOKEN || GITHUB_CONFIG.GITHUB_TOKEN.trim() === '') {
+        console.error('❌ GITHUB_TOKEN не налаштовано або порожній');
+        console.error('💡 Перевірте файл config.js та оновіть сторінку (Ctrl+F5)');
         // Якщо токен не налаштовано, зберігаємо тільки в localStorage
         const uploadedImages = images.filter(img => !BASE_IMAGES.includes(img));
         localStorage.setItem('galleryImages', JSON.stringify(uploadedImages));
-        return true;
+        return false;
     }
+    
+    // Перевіряємо, чи токен не старий (починається з ghp_)
+    if (!GITHUB_CONFIG.GITHUB_TOKEN.startsWith('ghp_')) {
+        console.error('❌ Токен має неправильний формат');
+        const uploadedImages = images.filter(img => !BASE_IMAGES.includes(img));
+        localStorage.setItem('galleryImages', JSON.stringify(uploadedImages));
+        return false;
+    }
+    
+    console.log('✅ Токен знайдено, спроба зберегти в Gist...');
     
     try {
         // Фільтруємо тільки завантажені зображення (без базових)
