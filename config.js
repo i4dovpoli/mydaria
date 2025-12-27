@@ -5,9 +5,9 @@
 
 // Глобальна змінна для конфігурації
 var GITHUB_CONFIG = {
-    // Вставте ваш GitHub Personal Access Token тут
-    // НЕ публікуйте токен у публічному репозиторії! Використовуйте GitHub Secrets або змінні середовища
-    GITHUB_TOKEN: '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', // GitHub Personal Access Token
+    // GitHub Personal Access Token (вже налаштовано)
+    // ⚠️ УВАГА: Якщо репозиторій публічний, краще використати GitHub Secrets
+    GITHUB_TOKEN: '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',
     
     // ID вашого Gist (буде створено автоматично при першому використанні)
     GIST_ID: (typeof localStorage !== 'undefined' ? localStorage.getItem('galleryGistId') : null) || '',
