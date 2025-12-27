@@ -160,10 +160,67 @@ async function findExistingGist() {
     return null;
 }
 
+// Функція для завантаження актуального BASE_IMAGES з GitHub
+async function loadBaseImagesFromGitHub() {
+    if (typeof GITHUB_CONFIG === 'undefined' || !GITHUB_CONFIG || !GITHUB_CONFIG.GITHUB_TOKEN) {
+        return BASE_IMAGES;
+    }
+    
+    if (!GITHUB_CONFIG.REPO_OWNER || !GITHUB_CONFIG.REPO_NAME) {
+        return BASE_IMAGES;
+    }
+    
+    try {
+        const scriptUrl = `https://api.github.com/repos/${GITHUB_CONFIG.REPO_OWNER}/${GITHUB_CONFIG.REPO_NAME}/contents/script.js`;
+        const response = await fetch(scriptUrl, {
+            headers: {
+                'Authorization': `token ${GITHUB_CONFIG.GITHUB_TOKEN}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        
+        if (response.ok) {
+            const fileData = await response.json();
+            let content = '';
+            try {
+                content = decodeURIComponent(escape(atob(fileData.content.replace(/\s/g, ''))));
+            } catch (e) {
+                content = decodeURIComponent(escape(atob(fileData.content)));
+            }
+            
+            const baseImagesMatch = content.match(/const BASE_IMAGES = \[([\s\S]*?)\];/);
+            if (baseImagesMatch) {
+                const images = baseImagesMatch[1]
+                    .split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line && !line.startsWith('//'))
+                    .map(line => {
+                        const match = line.match(/['"]([^'"]+)['"]/);
+                        return match ? match[1] : null;
+                    })
+                    .filter(img => img !== null);
+                
+                console.log('✅ Завантажено актуальний BASE_IMAGES з GitHub:', images.length, 'фото');
+                return images;
+            }
+        }
+    } catch (error) {
+        console.error('Помилка завантаження BASE_IMAGES з GitHub:', error);
+    }
+    
+    return BASE_IMAGES;
+}
+
 // Функція для завантаження зображень з GitHub Gist
 async function loadGalleryImages() {
-    // Спочатку показуємо базові зображення
-    galleryImages = [...BASE_IMAGES];
+    // Спочатку завантажуємо актуальний BASE_IMAGES з GitHub (якщо можливо)
+    let currentBaseImages = BASE_IMAGES;
+    if (typeof GITHUB_CONFIG !== 'undefined' && GITHUB_CONFIG && GITHUB_CONFIG.GITHUB_TOKEN) {
+        currentBaseImages = await loadBaseImagesFromGitHub();
+    }
+    
+    // Показуємо базові зображення
+    galleryImages = [...currentBaseImages];
     updateGallery();
     
     // Завантажуємо з GitHub Gist (якщо налаштовано)
@@ -191,8 +248,10 @@ async function loadGalleryImages() {
                     if (content) {
                         const savedImages = JSON.parse(content.content);
                         if (Array.isArray(savedImages) && savedImages.length > 0) {
-                            // Об'єднуємо базові зображення з завантаженими
-                            galleryImages = [...BASE_IMAGES, ...savedImages.filter(img => !BASE_IMAGES.includes(img))];
+                            // Об'єднуємо базові зображення з завантаженими (без дублікатів)
+                            const allImages = [...new Set([...currentBaseImages, ...savedImages])];
+                            galleryImages = allImages;
+                            
                             // Оновлюємо localStorage для кешування
                             localStorage.setItem('galleryImages', JSON.stringify(savedImages));
                             localStorage.setItem('galleryGistId', gistId);
@@ -201,9 +260,12 @@ async function loadGalleryImages() {
                                 GITHUB_CONFIG.GIST_ID = gistId;
                             }
                             updateGallery();
+                            console.log('✅ Завантажено фото з Gist:', savedImages.length, 'фото');
                             return;
                         }
                     }
+                } else {
+                    console.error('Помилка завантаження Gist:', response.status, response.statusText);
                 }
             }
         } catch (error) {
@@ -214,8 +276,10 @@ async function loadGalleryImages() {
                 try {
                     const parsed = JSON.parse(localImages);
                     if (Array.isArray(parsed) && parsed.length > 0) {
-                        galleryImages = [...BASE_IMAGES, ...parsed.filter(img => !BASE_IMAGES.includes(img))];
+                        const allImages = [...new Set([...currentBaseImages, ...parsed])];
+                        galleryImages = allImages;
                         updateGallery();
+                        console.log('✅ Використано кеш з localStorage:', parsed.length, 'фото');
                     }
                 } catch (e) {
                     console.error('Помилка парсингу localStorage:', e);
@@ -229,7 +293,8 @@ async function loadGalleryImages() {
             try {
                 const parsed = JSON.parse(localImages);
                 if (Array.isArray(parsed) && parsed.length > 0) {
-                    galleryImages = [...BASE_IMAGES, ...parsed.filter(img => !BASE_IMAGES.includes(img))];
+                    const allImages = [...new Set([...currentBaseImages, ...parsed])];
+                    galleryImages = allImages;
                     updateGallery();
                 }
             } catch (e) {
