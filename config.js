@@ -10,7 +10,7 @@ var GITHUB_CONFIG = {
     // GitHub Personal Access Token (вже налаштовано)
     // ⚠️ УВАГА: Якщо репозиторій публічний, краще використати GitHub Secrets
     // Потрібні права: repo (повний доступ до репозиторію) та gist
-    GITHUB_TOKEN: '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',
+    GITHUB_TOKEN: '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',
     
     // ID вашого Gist (буде створено автоматично при першому використанні)
     // Після першого завантаження фото, ID збережеться тут автоматично
