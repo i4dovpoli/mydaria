@@ -239,6 +239,104 @@ async function loadGalleryImages() {
     }
 }
 
+// Функція для оновлення script.js в GitHub репозиторії
+async function updateScriptJsInGitHub(newImages) {
+    if (typeof GITHUB_CONFIG === 'undefined' || !GITHUB_CONFIG || !GITHUB_CONFIG.GITHUB_TOKEN) {
+        return false;
+    }
+    
+    if (!GITHUB_CONFIG.REPO_OWNER || !GITHUB_CONFIG.REPO_NAME) {
+        console.log('⚠️ Налаштування репозиторію не вказано, пропускаємо оновлення script.js');
+        return false;
+    }
+    
+    try {
+        // Отримуємо поточний вміст script.js
+        const scriptUrl = `https://api.github.com/repos/${GITHUB_CONFIG.REPO_OWNER}/${GITHUB_CONFIG.REPO_NAME}/contents/script.js`;
+        
+        const getResponse = await fetch(scriptUrl, {
+            headers: {
+                'Authorization': `token ${GITHUB_CONFIG.GITHUB_TOKEN}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        
+        if (!getResponse.ok) {
+            console.error('Не вдалося отримати script.js з GitHub. Перевірте права токену (потрібні права: repo)');
+            return false;
+        }
+        
+        const fileData = await getResponse.json();
+        // Декодуємо base64 контент (GitHub API повертає контент з переносами рядків)
+        let currentContent = '';
+        try {
+            currentContent = decodeURIComponent(escape(atob(fileData.content.replace(/\s/g, ''))));
+        } catch (e) {
+            // Якщо не вдалося, спробуємо без заміни пробілів
+            currentContent = decodeURIComponent(escape(atob(fileData.content)));
+        }
+        
+        // Знаходимо масив BASE_IMAGES та додаємо нові фото
+        const baseImagesMatch = currentContent.match(/const BASE_IMAGES = \[([\s\S]*?)\];/);
+        if (!baseImagesMatch) {
+            console.error('Не вдалося знайти BASE_IMAGES в script.js');
+            return false;
+        }
+        
+        // Парсимо існуючі фото
+        const existingImages = baseImagesMatch[1]
+            .split('\n')
+            .map(line => line.trim())
+            .filter(line => line && !line.startsWith('//'))
+            .map(line => {
+                const match = line.match(/['"]([^'"]+)['"]/);
+                return match ? match[1] : null;
+            })
+            .filter(img => img !== null);
+        
+        // Додаємо нові фото (які ще не є в списку)
+        const allImages = [...new Set([...existingImages, ...newImages])];
+        
+        // Формуємо новий масив
+        const newBaseImagesArray = allImages.map(img => `        '${img}'`).join(',\n');
+        const newContent = currentContent.replace(
+            /const BASE_IMAGES = \[[\s\S]*?\];/,
+            `const BASE_IMAGES = [\n${newBaseImagesArray}\n];`
+        );
+        
+        // Кодуємо в base64 для GitHub API
+        const encodedContent = btoa(unescape(encodeURIComponent(newContent)));
+        
+        // Оновлюємо файл через GitHub API
+        const updateResponse = await fetch(scriptUrl, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${GITHUB_CONFIG.GITHUB_TOKEN}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: `Додано ${newImages.length} нових фото до галереї (автоматично)`,
+                content: encodedContent,
+                sha: fileData.sha,
+                branch: GITHUB_CONFIG.REPO_BRANCH || 'main'
+            })
+        });
+        
+        if (updateResponse.ok) {
+            console.log('✅ script.js оновлено в GitHub репозиторії');
+            return true;
+        } else {
+            const error = await updateResponse.json();
+            console.error('Помилка оновлення script.js:', error);
+            return false;
+        }
+    } catch (error) {
+        console.error('Помилка оновлення script.js:', error);
+        return false;
+    }
+}
+
 // Функція для збереження зображень у GitHub Gist
 async function saveGalleryImagesToGist(images) {
     if (typeof GITHUB_CONFIG === 'undefined' || !GITHUB_CONFIG || !GITHUB_CONFIG.GITHUB_TOKEN) {
@@ -586,19 +684,37 @@ uploadSubmitBtn.addEventListener('click', () => {
     
     // Чекаємо, поки всі фото завантажаться
     Promise.all(uploadPromises).then(async () => {
+        // Отримуємо тільки нові фото (які ще не в BASE_IMAGES)
+        const newImages = galleryImages.filter(img => !BASE_IMAGES.includes(img));
+        
         // Зберігаємо в GitHub Gist (або localStorage якщо не налаштовано)
-        const saved = await saveGalleryImagesToGist(galleryImages);
+        const savedToGist = await saveGalleryImagesToGist(galleryImages);
+        
+        // Оновлюємо script.js в GitHub репозиторії (додаємо нові фото до BASE_IMAGES)
+        let savedToScript = false;
+        if (newImages.length > 0 && typeof GITHUB_CONFIG !== 'undefined' && GITHUB_CONFIG && GITHUB_CONFIG.GITHUB_TOKEN) {
+            savedToScript = await updateScriptJsInGitHub(newImages);
+        }
         
         // Оновлюємо галерею
         updateGallery();
+        
+        // Оновлюємо BASE_IMAGES локально
+        BASE_IMAGES.push(...newImages);
         
         // Закриваємо модальне вікно
         closeUploadModal();
         
         // Показуємо повідомлення
-        const message = saved 
-            ? `Успішно додано ${files.length} фото! Вони тепер доступні всім користувачам.`
-            : `Успішно додано ${files.length} фото! (Збережено локально - налаштуйте GitHub токен для синхронізації)`;
+        let message = '';
+        if (savedToScript) {
+            message = `✅ Успішно додано ${files.length} фото!\n\n📸 Фото додано до галереї\n💾 Збережено в GitHub Gist\n📝 Оновлено script.js в репозиторії\n\nВсі користувачі тепер бачать ці фото!`;
+        } else if (savedToGist) {
+            message = `✅ Успішно додано ${files.length} фото!\n\n📸 Фото додано до галереї\n💾 Збережено в GitHub Gist\n\n⚠️ script.js не оновлено (потрібні права на репозиторій)`;
+        } else {
+            message = `✅ Успішно додано ${files.length} фото!\n\n📸 Фото додано до галереї (локально)\n\n⚠️ Налаштуйте GitHub токен для синхронізації`;
+        }
+        
         setTimeout(() => {
             alert(message);
         }, 100);

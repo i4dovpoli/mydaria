@@ -7,6 +7,7 @@
 var GITHUB_CONFIG = {
     // GitHub Personal Access Token (вже налаштовано)
     // ⚠️ УВАГА: Якщо репозиторій публічний, краще використати GitHub Secrets
+    // Потрібні права: repo (повний доступ до репозиторію) та gist
     GITHUB_TOKEN: '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',
     
     // ID вашого Gist (буде створено автоматично при першому використанні)
@@ -15,7 +16,12 @@ var GITHUB_CONFIG = {
     GIST_ID: (typeof localStorage !== 'undefined' ? localStorage.getItem('galleryGistId') : null) || '',
     
     // Ім'я файлу в Gist
-    GIST_FILENAME: 'gallery-images.json'
+    GIST_FILENAME: 'gallery-images.json',
+    
+    // Налаштування репозиторію для автоматичного оновлення script.js
+    REPO_OWNER: 'i4dovpoli',
+    REPO_NAME: 'mydaria',
+    REPO_BRANCH: 'main'
 };
 
 // Також зберігаємо в window для глобального доступу
