@@ -1,6 +1,20 @@
 // Пароль для додавання фото (залиште порожнім '', щоб дозволити всім додавати фото)
 const PASSWORD = '';
 
+// Перевірка завантаження config.js при старті
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof GITHUB_CONFIG === 'undefined') {
+        console.error('❌ КРИТИЧНА ПОМИЛКА: config.js не завантажився!');
+        console.error('💡 Перевірте, чи файл config.js існує та доступний');
+    } else if (!GITHUB_CONFIG.GITHUB_TOKEN || GITHUB_CONFIG.GITHUB_TOKEN.trim() === '') {
+        console.error('❌ КРИТИЧНА ПОМИЛКА: GITHUB_TOKEN не налаштовано!');
+        console.error('💡 Відкрийте config.js та вставте токен');
+    } else {
+        console.log('✅ config.js завантажено успішно');
+        console.log('✅ Токен налаштовано (довжина:', GITHUB_CONFIG.GITHUB_TOKEN.length, 'символів)');
+    }
+});
+
 // Базовий масив зображень
 const BASE_IMAGES = [
     'images/IMG_7611.JPG',

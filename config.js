@@ -4,10 +4,11 @@
 // Потрібні права:
 //   - gist (створення та редагування gist) - для збереження фото
 //   - repo (повний доступ до репозиторію) - для автоматичного оновлення script.js
+// Версія: 2.0 (оновлено токен)
 
 // Глобальна змінна для конфігурації
 var GITHUB_CONFIG = {
-    // GitHub Personal Access Token (вже налаштовано)
+    // GitHub Personal Access Token (оновлено)
     // ⚠️ УВАГА: Якщо репозиторій публічний, краще використати GitHub Secrets
     // Потрібні права: repo (повний доступ до репозиторію) та gist
     GITHUB_TOKEN: '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',
