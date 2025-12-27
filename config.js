@@ -1,7 +1,9 @@
 // Конфігурація для збереження фото
 // ВАЖЛИВО: Створіть GitHub Personal Access Token та вставте його нижче
 // Інструкція: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
-// Потрібні права: gist (створення та редагування gist)
+// Потрібні права:
+//   - gist (створення та редагування gist) - для збереження фото
+//   - repo (повний доступ до репозиторію) - для автоматичного оновлення script.js
 
 // Глобальна змінна для конфігурації
 var GITHUB_CONFIG = {
