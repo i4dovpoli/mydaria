@@ -824,7 +824,13 @@ uploadSubmitBtn.addEventListener('click', () => {
         // Оновлюємо script.js в GitHub репозиторії (додаємо нові фото до BASE_IMAGES)
         let savedToScript = false;
         if (newImages.length > 0 && typeof GITHUB_CONFIG !== 'undefined' && GITHUB_CONFIG && GITHUB_CONFIG.GITHUB_TOKEN) {
+            console.log('🔄 Спроба оновити script.js в GitHub...');
             savedToScript = await updateScriptJsInGitHub(newImages);
+            if (savedToScript) {
+                console.log('✅ Фото успішно додано в script.js!');
+            } else {
+                console.log('⚠️ Не вдалося оновити script.js (перевірте права токену)');
+            }
         }
         
         // Оновлюємо галерею
