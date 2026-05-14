@@ -4,12 +4,8 @@
   "private": true,
   "description": "Romantic gallery and diary site",
   "scripts": {
-    "build": "node build-vercel.js",
     "start": "node server.js",
     "check": "node --check script.js && node --check server.js"
-  },
-  "dependencies": {
-    "@vercel/blob": "^2.0.0"
   },
   "engines": {
     "node": ">=20"

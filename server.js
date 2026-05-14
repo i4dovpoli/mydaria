@@ -218,6 +218,11 @@ const server = http.createServer(async (request, response) => {
         return;
     }
 
+    if (request.method === "GET" && requestUrl.pathname === "/api/health") {
+        sendJson(response, 200, { ok: true });
+        return;
+    }
+
     if (request.method === "POST" && requestUrl.pathname === "/api/photos") {
         await handleUploadPhoto(request, response);
         return;
