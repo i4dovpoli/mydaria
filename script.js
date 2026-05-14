@@ -224,6 +224,22 @@ function saveDiaryEntries() {
     localStorage.setItem(diaryStorageKey, JSON.stringify(diaryEntries));
 }
 
+function rememberLocalGalleryPhoto(src) {
+    if (!src || src.startsWith("image/")) return;
+
+    const localPhotos = loadLocalGalleryPhotos();
+    if (!localPhotos.includes(src)) {
+        localPhotos.unshift(src);
+        saveLocalGalleryPhotos(localPhotos);
+    }
+}
+
+function addGalleryPhoto(src) {
+    if (src && !galleryImages.includes(src)) {
+        galleryImages.unshift(src);
+    }
+}
+
 async function fetchJson(url) {
     const response = await fetch(url);
     if (!response.ok) throw new Error("Request failed");
@@ -238,7 +254,8 @@ async function loadServerData() {
             .filter(Boolean)
             .reverse()
             .forEach((src) => {
-                if (!galleryImages.includes(src)) galleryImages.unshift(src);
+                addGalleryPhoto(src);
+                rememberLocalGalleryPhoto(src);
             });
     } catch (error) {
         // Static hosting fallback keeps using localStorage.
@@ -246,14 +263,22 @@ async function loadServerData() {
 
     try {
         const serverDiary = await fetchJson("/api/diary");
-        if (Array.isArray(serverDiary)) {
-            diaryEntries = serverDiary;
+        if (Array.isArray(serverDiary) && serverDiary.length > 0) {
+            const mergedEntries = [...serverDiary];
+            diaryEntries.forEach((entry) => {
+                if (!mergedEntries.some((savedEntry) => savedEntry.id === entry.id)) {
+                    mergedEntries.push(entry);
+                }
+            });
+
+            diaryEntries = mergedEntries;
+            saveDiaryEntries();
             diaryEntries
                 .map((entry) => entry.photo)
                 .filter(Boolean)
                 .reverse()
                 .forEach((src) => {
-                    if (!galleryImages.includes(src)) galleryImages.unshift(src);
+                    addGalleryPhoto(src);
                 });
         }
     } catch (error) {
@@ -583,7 +608,8 @@ photoUploadForm.addEventListener("submit", async (event) => {
 
     try {
         const savedPhoto = await uploadPhotoToServer(file);
-        galleryImages.unshift(savedPhoto.src);
+        addGalleryPhoto(savedPhoto.src);
+        rememberLocalGalleryPhoto(savedPhoto.src);
         activeGalleryFilter = "photos";
         updateGalleryFilters();
         uploadStatus.textContent = "Фото збережено в папку uploads/gallery і додано в галерею.";
@@ -592,7 +618,7 @@ photoUploadForm.addEventListener("submit", async (event) => {
         const localPhotos = loadLocalGalleryPhotos();
         localPhotos.unshift(localPhoto);
         saveLocalGalleryPhotos(localPhotos);
-        galleryImages.unshift(localPhoto);
+        addGalleryPhoto(localPhoto);
         activeGalleryFilter = "photos";
         updateGalleryFilters();
         uploadStatus.textContent = "Фото додано локально. Для збереження в папку запускай сайт через Node/Render.";
@@ -637,9 +663,10 @@ diaryForm.addEventListener("submit", async (event) => {
         if (!diaryEntries.some((savedEntry) => savedEntry.id === entry.id)) {
             diaryEntries.unshift(entry);
         }
+        saveDiaryEntries();
 
         if (entry.photo) {
-            galleryImages.unshift(entry.photo);
+            addGalleryPhoto(entry.photo);
             activeGalleryFilter = "memories";
             updateGalleryFilters();
         }
