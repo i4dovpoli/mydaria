@@ -10,6 +10,16 @@ const galleryDir = path.join(uploadRoot, "gallery");
 const dataDir = path.join(uploadRoot, "data");
 const photosFile = path.join(dataDir, "photos.json");
 const diaryFile = path.join(dataDir, "diary.json");
+const githubBackupDir = path.join(root, "spogady");
+const githubPhotosFile = path.join(githubBackupDir, "photos.json");
+const githubDiaryFile = path.join(githubBackupDir, "diary.json");
+const githubSync = {
+    token: process.env.GITHUB_SYNC_TOKEN || "",
+    owner: process.env.GITHUB_SYNC_OWNER || "i4dovpoli",
+    repo: process.env.GITHUB_SYNC_REPO || "mydaria",
+    branch: process.env.GITHUB_SYNC_BRANCH || "main",
+    folder: process.env.GITHUB_SYNC_FOLDER || "spogady"
+};
 
 const mimeTypes = {
     ".html": "text/html; charset=utf-8",
@@ -26,6 +36,7 @@ const mimeTypes = {
 
 fs.mkdirSync(galleryDir, { recursive: true });
 fs.mkdirSync(dataDir, { recursive: true });
+fs.mkdirSync(path.join(githubBackupDir, "photos"), { recursive: true });
 
 function sendJson(response, status, payload) {
     response.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
@@ -42,6 +53,143 @@ function readJson(filePath, fallback) {
 
 function writeJson(filePath, payload) {
     fs.writeFileSync(filePath, JSON.stringify(payload, null, 2));
+}
+
+function mergeById(primary, fallback) {
+    const merged = [...primary];
+    fallback.forEach((item) => {
+        if (!merged.some((savedItem) => savedItem.id === item.id)) {
+            merged.push(item);
+        }
+    });
+    return merged;
+}
+
+function getPhotos() {
+    return mergeById(readJson(photosFile, []), readJson(githubPhotosFile, []));
+}
+
+function getDiaryEntries() {
+    return mergeById(readJson(diaryFile, []), readJson(githubDiaryFile, []));
+}
+
+function toGithubPhotoSrc(src) {
+    if (!src || !src.startsWith("/uploads/gallery/")) return src;
+    return `/${githubSync.folder}/photos/${path.basename(src)}`;
+}
+
+function toGithubPhotos(photos) {
+    return photos.map((photo) => ({
+        ...photo,
+        src: toGithubPhotoSrc(photo.src)
+    }));
+}
+
+function toGithubDiaryEntries(entries) {
+    return entries.map((entry) => ({
+        ...entry,
+        photo: toGithubPhotoSrc(entry.photo)
+    }));
+}
+
+function githubSyncEnabled() {
+    return Boolean(githubSync.token && githubSync.owner && githubSync.repo && githubSync.branch);
+}
+
+function githubApiPath(filePath) {
+    return filePath.split("/").map(encodeURIComponent).join("/");
+}
+
+async function githubRequest(method, filePath, payload) {
+    const url = `https://api.github.com/repos/${githubSync.owner}/${githubSync.repo}/contents/${githubApiPath(filePath)}`;
+    const response = await fetch(url, {
+        method,
+        headers: {
+            "Accept": "application/vnd.github+json",
+            "Authorization": `Bearer ${githubSync.token}`,
+            "Content-Type": "application/json",
+            "X-GitHub-Api-Version": "2022-11-28"
+        },
+        body: payload ? JSON.stringify(payload) : undefined
+    });
+
+    if (response.status === 404) return null;
+    if (!response.ok) {
+        throw new Error(`GitHub API failed: ${response.status}`);
+    }
+
+    return response.json();
+}
+
+async function getGithubSha(filePath) {
+    const url = `https://api.github.com/repos/${githubSync.owner}/${githubSync.repo}/contents/${githubApiPath(filePath)}?ref=${encodeURIComponent(githubSync.branch)}`;
+    const response = await fetch(url, {
+        headers: {
+            "Accept": "application/vnd.github+json",
+            "Authorization": `Bearer ${githubSync.token}`,
+            "X-GitHub-Api-Version": "2022-11-28"
+        }
+    });
+
+    if (response.status === 404) return null;
+    if (!response.ok) {
+        throw new Error(`GitHub API failed: ${response.status}`);
+    }
+
+    const existingFile = await response.json();
+    return existingFile?.sha || null;
+}
+
+async function putGithubFile(filePath, content, message) {
+    if (!githubSyncEnabled()) return false;
+
+    try {
+        const sha = await getGithubSha(filePath);
+        const payload = {
+            message,
+            branch: githubSync.branch,
+            content: Buffer.isBuffer(content)
+                ? content.toString("base64")
+                : Buffer.from(content, "utf8").toString("base64")
+        };
+
+        if (sha) payload.sha = sha;
+        await githubRequest("PUT", filePath, payload);
+        return true;
+    } catch (error) {
+        console.error("GitHub sync failed:", error.message);
+        return false;
+    }
+}
+
+async function syncGithubBackup({ imageFile, imageFilename, photos, diaryEntries }) {
+    if (!githubSyncEnabled()) return false;
+
+    if (imageFile && imageFilename) {
+        await putGithubFile(
+            `${githubSync.folder}/photos/${imageFilename}`,
+            imageFile.data,
+            `Add memory photo ${imageFilename}`
+        );
+    }
+
+    if (photos) {
+        await putGithubFile(
+            `${githubSync.folder}/photos.json`,
+            JSON.stringify(toGithubPhotos(photos), null, 2),
+            "Update saved photos"
+        );
+    }
+
+    if (diaryEntries) {
+        await putGithubFile(
+            `${githubSync.folder}/diary.json`,
+            JSON.stringify(toGithubDiaryEntries(diaryEntries), null, 2),
+            "Update diary memories"
+        );
+    }
+
+    return true;
 }
 
 function readBody(request) {
@@ -128,7 +276,7 @@ function saveImage(file) {
     const filePath = path.join(galleryDir, filename);
 
     fs.writeFileSync(filePath, file.data);
-    return `/uploads/gallery/${filename}`;
+    return { src: `/uploads/gallery/${filename}`, filename };
 }
 
 async function handleUploadPhoto(request, response) {
@@ -136,13 +284,18 @@ async function handleUploadPhoto(request, response) {
         const body = await readBody(request);
         const parsed = parseMultipart(body, request.headers["content-type"] || "");
         const imageFile = parsed.files.find((file) => file.field === "photo");
-        const src = saveImage(imageFile);
-        const photos = readJson(photosFile, []);
-        const photo = { id: crypto.randomUUID(), src, createdAt: new Date().toISOString() };
+        const savedImage = saveImage(imageFile);
+        const photos = getPhotos();
+        const photo = { id: crypto.randomUUID(), src: savedImage.src, createdAt: new Date().toISOString() };
 
         photos.unshift(photo);
         writeJson(photosFile, photos);
-        sendJson(response, 201, photo);
+        const gitSynced = await syncGithubBackup({
+            imageFile,
+            imageFilename: savedImage.filename,
+            photos
+        });
+        sendJson(response, 201, { ...photo, gitSynced });
     } catch (error) {
         sendJson(response, 400, { error: "Не вдалося зберегти фото" });
     }
@@ -154,7 +307,8 @@ async function handleCreateDiary(request, response) {
         const parsed = parseMultipart(body, request.headers["content-type"] || "");
         const text = (parsed.fields.text || "").trim();
         const imageFile = parsed.files.find((file) => file.field === "photo");
-        const photo = imageFile ? saveImage(imageFile) : "";
+        const savedImage = imageFile ? saveImage(imageFile) : null;
+        const photo = savedImage ? savedImage.src : "";
 
         if (!text) {
             sendJson(response, 400, { error: "Порожній спогад" });
@@ -162,16 +316,22 @@ async function handleCreateDiary(request, response) {
         }
 
         if (photo) {
-            const photos = readJson(photosFile, []);
+            const photos = getPhotos();
             photos.unshift({ id: crypto.randomUUID(), src: photo, createdAt: new Date().toISOString() });
             writeJson(photosFile, photos);
         }
 
-        const entries = readJson(diaryFile, []);
+        const entries = getDiaryEntries();
         const entry = { id: crypto.randomUUID(), text, photo, createdAt: new Date().toISOString() };
         entries.unshift(entry);
         writeJson(diaryFile, entries);
-        sendJson(response, 201, entry);
+        const gitSynced = await syncGithubBackup({
+            imageFile,
+            imageFilename: savedImage?.filename,
+            photos: getPhotos(),
+            diaryEntries: entries
+        });
+        sendJson(response, 201, { ...entry, gitSynced });
     } catch (error) {
         sendJson(response, 400, { error: "Не вдалося зберегти спогад" });
     }
@@ -214,7 +374,7 @@ const server = http.createServer(async (request, response) => {
     const requestUrl = new URL(request.url, `http://${request.headers.host}`);
 
     if (request.method === "GET" && requestUrl.pathname === "/api/photos") {
-        sendJson(response, 200, readJson(photosFile, []));
+        sendJson(response, 200, getPhotos());
         return;
     }
 
@@ -229,7 +389,7 @@ const server = http.createServer(async (request, response) => {
     }
 
     if (request.method === "GET" && requestUrl.pathname === "/api/diary") {
-        sendJson(response, 200, readJson(diaryFile, []));
+        sendJson(response, 200, getDiaryEntries());
         return;
     }
 
@@ -240,8 +400,9 @@ const server = http.createServer(async (request, response) => {
 
     if (request.method === "DELETE" && requestUrl.pathname.startsWith("/api/diary/")) {
         const entryId = decodeURIComponent(requestUrl.pathname.replace("/api/diary/", ""));
-        const entries = readJson(diaryFile, []);
-        writeJson(diaryFile, entries.filter((entry) => entry.id !== entryId));
+        const entries = getDiaryEntries().filter((entry) => entry.id !== entryId);
+        writeJson(diaryFile, entries);
+        await syncGithubBackup({ diaryEntries: entries });
         sendJson(response, 200, { ok: true });
         return;
     }
