@@ -21,6 +21,7 @@
             <div class="hero-actions">
                 <a href="#love-counter" class="btn-primary">Наш час разом</a>
                 <a href="#gallery" class="btn-secondary">Дивитися фото</a>
+                <a href="#add-photo" class="btn-secondary">Додати фото</a>
                 <a href="#diary" class="btn-secondary">Наш щоденник</a>
             </div>
         </div>
@@ -110,6 +111,14 @@
                     <p class="eyebrow">спогади</p>
                     <h2>Усі наші фото</h2>
                 </div>
+                <form class="photo-upload" id="add-photo">
+                    <div>
+                        <label for="gallery-photo">Додати фото без щоденника</label>
+                        <input id="gallery-photo" type="file" accept="image/*" required>
+                    </div>
+                    <button class="btn-primary photo-upload-submit" type="submit">Додати фото</button>
+                    <p class="upload-status" id="upload-status" aria-live="polite"></p>
+                </form>
                 <div class="gallery-grid" id="gallery-grid" aria-live="polite"></div>
             </div>
         </section>

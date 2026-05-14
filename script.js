@@ -107,10 +107,15 @@ const diaryForm = document.getElementById("diary-form");
 const memoryText = document.getElementById("memory-text");
 const memoryPhoto = document.getElementById("memory-photo");
 const diaryList = document.getElementById("diary-list");
+const photoUploadForm = document.getElementById("add-photo");
+const galleryPhotoInput = document.getElementById("gallery-photo");
+const uploadStatus = document.getElementById("upload-status");
 const diaryStorageKey = "ourDiaryEntries";
+const galleryStorageKey = "ourGalleryUploads";
 let currentIndex = 0;
 let diaryEntries = loadDiaryEntries();
 
+galleryImages.push(...loadLocalGalleryPhotos());
 galleryImages.push(...diaryEntries.filter((entry) => entry.photo).map((entry) => entry.photo));
 
 function renderGallery() {
@@ -145,8 +150,85 @@ function loadDiaryEntries() {
     }
 }
 
+function loadLocalGalleryPhotos() {
+    try {
+        const savedPhotos = localStorage.getItem(galleryStorageKey);
+        return savedPhotos ? JSON.parse(savedPhotos) : [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function saveLocalGalleryPhotos(photos) {
+    localStorage.setItem(galleryStorageKey, JSON.stringify(photos));
+}
+
 function saveDiaryEntries() {
     localStorage.setItem(diaryStorageKey, JSON.stringify(diaryEntries));
+}
+
+async function fetchJson(url) {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Request failed");
+    return response.json();
+}
+
+async function loadServerData() {
+    try {
+        const photos = await fetchJson("/api/photos");
+        photos
+            .map((photo) => photo.src)
+            .filter(Boolean)
+            .reverse()
+            .forEach((src) => {
+                if (!galleryImages.includes(src)) galleryImages.unshift(src);
+            });
+    } catch (error) {
+        // Static hosting fallback keeps using localStorage.
+    }
+
+    try {
+        const serverDiary = await fetchJson("/api/diary");
+        if (Array.isArray(serverDiary)) {
+            diaryEntries = serverDiary;
+            diaryEntries
+                .map((entry) => entry.photo)
+                .filter(Boolean)
+                .reverse()
+                .forEach((src) => {
+                    if (!galleryImages.includes(src)) galleryImages.unshift(src);
+                });
+        }
+    } catch (error) {
+        // Static hosting fallback keeps using localStorage.
+    }
+}
+
+async function uploadPhotoToServer(file) {
+    const formData = new FormData();
+    formData.append("photo", file);
+
+    const response = await fetch("/api/photos", {
+        method: "POST",
+        body: formData
+    });
+
+    if (!response.ok) throw new Error("Upload failed");
+    return response.json();
+}
+
+async function createDiaryEntryOnServer(text, file) {
+    const formData = new FormData();
+    formData.append("text", text);
+    if (file) formData.append("photo", file);
+
+    const response = await fetch("/api/diary", {
+        method: "POST",
+        body: formData
+    });
+
+    if (!response.ok) throw new Error("Diary upload failed");
+    return response.json();
 }
 
 function formatDiaryDate(dateValue) {
@@ -207,7 +289,13 @@ function renderDiary() {
     });
 }
 
-function deleteDiaryEntry(entryId) {
+async function deleteDiaryEntry(entryId) {
+    try {
+        await fetch(`/api/diary/${entryId}`, { method: "DELETE" });
+    } catch (error) {
+        // Static hosting fallback deletes only local entries.
+    }
+
     diaryEntries = diaryEntries.filter((entry) => entry.id !== entryId);
     saveDiaryEntries();
     syncDiaryPhotosToGallery();
@@ -312,6 +400,36 @@ document.addEventListener("keydown", (event) => {
     if (event.key === "ArrowRight") showImage(1);
 });
 
+photoUploadForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const file = galleryPhotoInput.files[0];
+    if (!file) return;
+
+    const submitButton = photoUploadForm.querySelector(".photo-upload-submit");
+    submitButton.disabled = true;
+    submitButton.textContent = "Додаю...";
+    uploadStatus.textContent = "Завантажую фото...";
+
+    try {
+        const savedPhoto = await uploadPhotoToServer(file);
+        galleryImages.unshift(savedPhoto.src);
+        uploadStatus.textContent = "Фото збережено в папку uploads/gallery і додано в галерею.";
+    } catch (error) {
+        const localPhoto = await resizeImage(file);
+        const localPhotos = loadLocalGalleryPhotos();
+        localPhotos.unshift(localPhoto);
+        saveLocalGalleryPhotos(localPhotos);
+        galleryImages.unshift(localPhoto);
+        uploadStatus.textContent = "Фото додано локально. Для збереження в папку запускай сайт через Node/Render.";
+    } finally {
+        photoUploadForm.reset();
+        renderGallery();
+        submitButton.disabled = false;
+        submitButton.textContent = "Додати фото";
+    }
+});
+
 diaryForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -326,19 +444,28 @@ diaryForm.addEventListener("submit", async (event) => {
 
     try {
         const file = memoryPhoto.files[0];
-        const photo = file ? await resizeImage(file) : "";
-        const entry = {
-            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-            text,
-            photo,
-            createdAt: new Date().toISOString()
-        };
+        let entry;
 
-        diaryEntries.unshift(entry);
-        saveDiaryEntries();
+        try {
+            entry = await createDiaryEntryOnServer(text, file);
+        } catch (serverError) {
+            const photo = file ? await resizeImage(file) : "";
+            entry = {
+                id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+                text,
+                photo,
+                createdAt: new Date().toISOString()
+            };
+            diaryEntries.unshift(entry);
+            saveDiaryEntries();
+        }
 
-        if (photo) {
-            galleryImages.unshift(photo);
+        if (!diaryEntries.some((savedEntry) => savedEntry.id === entry.id)) {
+            diaryEntries.unshift(entry);
+        }
+
+        if (entry.photo) {
+            galleryImages.unshift(entry.photo);
         }
 
         diaryForm.reset();
@@ -352,7 +479,12 @@ diaryForm.addEventListener("submit", async (event) => {
     }
 });
 
-renderGallery();
-renderDiary();
-updateTimers();
-setInterval(updateTimers, 1000);
+async function initializeSite() {
+    await loadServerData();
+    renderGallery();
+    renderDiary();
+    updateTimers();
+    setInterval(updateTimers, 1000);
+}
+
+initializeSite();

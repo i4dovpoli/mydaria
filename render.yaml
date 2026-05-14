@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: mydaria
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+    disk:
+      name: mydaria-uploads
+      mountPath: /opt/render/project/src/uploads
+      sizeGB: 1

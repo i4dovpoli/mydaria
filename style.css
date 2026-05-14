@@ -389,6 +389,48 @@ section {
         radial-gradient(circle at right, rgba(134, 168, 137, 0.16), transparent 30%);
 }
 
+.photo-upload {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 14px;
+    align-items: end;
+    margin-bottom: 26px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.86);
+    box-shadow: 0 12px 35px rgba(70, 43, 56, 0.1);
+}
+
+.photo-upload label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--ink);
+    font-weight: 800;
+}
+
+.photo-upload input {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+    padding: 12px;
+}
+
+.photo-upload-submit {
+    border: 0;
+    cursor: pointer;
+}
+
+.upload-status {
+    grid-column: 1 / -1;
+    min-height: 24px;
+    color: var(--muted);
+    font-size: 0.92rem;
+}
+
 .gallery-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -397,12 +439,14 @@ section {
 
 .gallery-item {
     aspect-ratio: 1;
+    appearance: none;
     border: 0;
     border-radius: 8px;
     overflow: hidden;
     background: #fff;
     box-shadow: 0 12px 35px rgba(70, 43, 56, 0.12);
     cursor: pointer;
+    touch-action: manipulation;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
@@ -431,6 +475,7 @@ section {
     justify-content: center;
     padding: 72px 72px 48px;
     background: rgba(12, 10, 14, 0.92);
+    touch-action: manipulation;
 }
 
 .modal.show {
@@ -526,6 +571,10 @@ section {
 
     .gallery-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .photo-upload {
+        grid-template-columns: 1fr;
     }
 }
 

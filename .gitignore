@@ -17,3 +17,9 @@ Thumbs.db
 # Локальні налаштування
 .env
 config.local.js
+
+# Runtime uploads
+uploads/gallery/*
+uploads/data/*.json
+!uploads/gallery/.gitkeep
+!uploads/data/.gitkeep
