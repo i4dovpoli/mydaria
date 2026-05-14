@@ -110,9 +110,11 @@ const diaryList = document.getElementById("diary-list");
 const diarySearch = document.getElementById("diary-search");
 const calendarGrid = document.getElementById("calendar-grid");
 const calendarTitle = document.getElementById("calendar-title");
+const calendarSelected = document.getElementById("calendar-selected");
 const calendarPrev = document.getElementById("calendar-prev");
 const calendarNext = document.getElementById("calendar-next");
 const favoritesGrid = document.getElementById("favorites-grid");
+const galleryFilterButtons = document.querySelectorAll(".gallery-filter");
 const photoUploadForm = document.getElementById("add-photo");
 const galleryPhotoInput = document.getElementById("gallery-photo");
 const uploadStatus = document.getElementById("upload-status");
@@ -124,6 +126,7 @@ let diaryEntries = loadDiaryEntries();
 let favoritePhotos = loadFavoritePhotos();
 let calendarDate = new Date();
 let selectedCalendarDate = "";
+let activeGalleryFilter = "photos";
 
 galleryImages.push(...loadLocalGalleryPhotos());
 galleryImages.push(...diaryEntries.filter((entry) => entry.photo).map((entry) => entry.photo));
@@ -132,7 +135,27 @@ function renderGallery() {
     const fragment = document.createDocumentFragment();
     galleryGrid.innerHTML = "";
 
-    galleryImages.forEach((src, index) => {
+    const memoryPhotos = new Set(diaryEntries.map((entry) => entry.photo).filter(Boolean));
+    const filteredImages = galleryImages.filter((src) => {
+        if (activeGalleryFilter === "memories") return memoryPhotos.has(src);
+        if (activeGalleryFilter === "favorites") return favoritePhotos.includes(src);
+        return !memoryPhotos.has(src);
+    });
+
+    if (filteredImages.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "favorite-empty";
+        empty.textContent = activeGalleryFilter === "memories"
+            ? "Тут будуть фото, які додані через спогади."
+            : activeGalleryFilter === "favorites"
+                ? "Натисни сердечко на фото, і воно з'явиться тут."
+                : "Тут поки немає простих фото.";
+        galleryGrid.appendChild(empty);
+        return;
+    }
+
+    filteredImages.forEach((src) => {
+        const index = galleryImages.indexOf(src);
         const button = document.createElement("button");
         button.className = "gallery-item";
         button.type = "button";
@@ -343,6 +366,9 @@ function renderCalendar() {
     const memoryDates = new Set(diaryEntries.map((entry) => toDateKey(entry.createdAt)));
 
     calendarTitle.textContent = monthName;
+    calendarSelected.textContent = selectedCalendarDate
+        ? `Показуємо спогади за ${formatDiaryDate(selectedCalendarDate)}`
+        : "Натисни на червону дату, щоб побачити спогади за цей день.";
     calendarGrid.innerHTML = "";
 
     for (let index = 0; index < offset; index += 1) {
@@ -437,7 +463,11 @@ async function deleteDiaryEntry(entryId) {
 
     diaryEntries = diaryEntries.filter((entry) => entry.id !== entryId);
     saveDiaryEntries();
+    if (selectedCalendarDate && !diaryEntries.some((entry) => toDateKey(entry.createdAt) === selectedCalendarDate)) {
+        selectedCalendarDate = "";
+    }
     syncDiaryPhotosToGallery();
+    renderCalendar();
     renderDiary();
 }
 
@@ -554,6 +584,8 @@ photoUploadForm.addEventListener("submit", async (event) => {
     try {
         const savedPhoto = await uploadPhotoToServer(file);
         galleryImages.unshift(savedPhoto.src);
+        activeGalleryFilter = "photos";
+        updateGalleryFilters();
         uploadStatus.textContent = "Фото збережено в папку uploads/gallery і додано в галерею.";
     } catch (error) {
         const localPhoto = await resizeImage(file);
@@ -561,6 +593,8 @@ photoUploadForm.addEventListener("submit", async (event) => {
         localPhotos.unshift(localPhoto);
         saveLocalGalleryPhotos(localPhotos);
         galleryImages.unshift(localPhoto);
+        activeGalleryFilter = "photos";
+        updateGalleryFilters();
         uploadStatus.textContent = "Фото додано локально. Для збереження в папку запускай сайт через Node/Render.";
     } finally {
         photoUploadForm.reset();
@@ -606,6 +640,8 @@ diaryForm.addEventListener("submit", async (event) => {
 
         if (entry.photo) {
             galleryImages.unshift(entry.photo);
+            activeGalleryFilter = "memories";
+            updateGalleryFilters();
         }
 
         diaryForm.reset();
@@ -640,5 +676,18 @@ calendarNext.addEventListener("click", () => {
     calendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1);
     renderCalendar();
 });
+galleryFilterButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+        activeGalleryFilter = button.dataset.filter;
+        updateGalleryFilters();
+        renderGallery();
+    });
+});
+
+function updateGalleryFilters() {
+    galleryFilterButtons.forEach((button) => {
+        button.classList.toggle("is-active", button.dataset.filter === activeGalleryFilter);
+    });
+}
 
 initializeSite();

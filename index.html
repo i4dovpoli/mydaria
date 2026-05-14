@@ -121,6 +121,7 @@
                                 <span>Нд</span>
                             </div>
                             <div class="calendar-grid" id="calendar-grid"></div>
+                            <p class="calendar-selected" id="calendar-selected"></p>
                         </div>
                         <div class="diary-list" id="diary-list" aria-live="polite"></div>
                     </div>
@@ -152,6 +153,11 @@
                     <button class="btn-primary photo-upload-submit" type="submit">Додати фото</button>
                     <p class="upload-status" id="upload-status" aria-live="polite"></p>
                 </form>
+                <div class="gallery-filters" aria-label="Фільтр фото">
+                    <button class="gallery-filter is-active" type="button" data-filter="photos">Фото</button>
+                    <button class="gallery-filter" type="button" data-filter="memories">Фото спогади</button>
+                    <button class="gallery-filter" type="button" data-filter="favorites">Обрані</button>
+                </div>
                 <div class="gallery-grid" id="gallery-grid" aria-live="polite"></div>
             </div>
         </section>

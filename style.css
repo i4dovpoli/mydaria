@@ -465,14 +465,24 @@ section {
 }
 
 .calendar-day.has-memory {
-    border-color: rgba(232, 111, 139, 0.5);
-    background: #ffe8ee;
-    color: var(--rose);
+    border-color: #d92652;
+    background: #d92652;
+    color: #fff;
     cursor: pointer;
+    box-shadow: 0 10px 26px rgba(217, 38, 82, 0.25);
 }
 
 .calendar-day.is-selected {
-    outline: 3px solid rgba(232, 111, 139, 0.25);
+    outline: 3px solid rgba(217, 38, 82, 0.28);
+}
+
+.calendar-selected {
+    min-height: 24px;
+    margin-top: 12px;
+    color: var(--rose);
+    font-size: 0.92rem;
+    font-weight: 800;
+    text-align: center;
 }
 
 .favorites {
@@ -536,6 +546,29 @@ section {
     min-height: 24px;
     color: var(--muted);
     font-size: 0.92rem;
+}
+
+.gallery-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 22px;
+}
+
+.gallery-filter {
+    border: 1px solid rgba(232, 111, 139, 0.34);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--rose);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 800;
+    padding: 10px 16px;
+}
+
+.gallery-filter.is-active {
+    background: var(--rose);
+    color: #fff;
 }
 
 .gallery-grid {
