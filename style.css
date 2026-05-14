@@ -262,6 +262,127 @@ section {
     font-weight: 800;
 }
 
+.diary {
+    background:
+        linear-gradient(180deg, #fffafb 0%, #fff3f6 100%),
+        radial-gradient(circle at left, rgba(232, 111, 139, 0.14), transparent 34%);
+}
+
+.diary-layout {
+    display: grid;
+    grid-template-columns: minmax(280px, 420px) 1fr;
+    gap: 28px;
+    align-items: start;
+}
+
+.diary-form,
+.diary-entry {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.86);
+    box-shadow: var(--shadow);
+}
+
+.diary-form {
+    position: sticky;
+    top: 18px;
+    display: grid;
+    gap: 12px;
+    padding: 24px;
+}
+
+.diary-form label {
+    color: var(--ink);
+    font-weight: 800;
+}
+
+.diary-form textarea,
+.diary-form input {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+}
+
+.diary-form textarea {
+    min-height: 160px;
+    resize: vertical;
+    padding: 14px;
+}
+
+.diary-form input {
+    padding: 12px;
+}
+
+.diary-form textarea:focus,
+.diary-form input:focus {
+    outline: 3px solid rgba(232, 111, 139, 0.22);
+    border-color: rgba(232, 111, 139, 0.5);
+}
+
+.diary-submit {
+    border: 0;
+    cursor: pointer;
+}
+
+.diary-hint,
+.diary-empty {
+    color: var(--muted);
+    font-size: 0.92rem;
+}
+
+.diary-list {
+    display: grid;
+    gap: 18px;
+}
+
+.diary-entry {
+    overflow: hidden;
+}
+
+.diary-entry img {
+    width: 100%;
+    max-height: 440px;
+    object-fit: cover;
+}
+
+.diary-entry-content {
+    padding: 22px;
+}
+
+.diary-entry-date {
+    margin-bottom: 10px;
+    color: var(--rose);
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.diary-entry-text {
+    color: var(--ink);
+    white-space: pre-wrap;
+}
+
+.diary-entry-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 18px;
+}
+
+.diary-delete {
+    border: 1px solid rgba(232, 111, 139, 0.34);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--rose);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 800;
+    padding: 8px 14px;
+}
+
 .gallery {
     background:
         linear-gradient(180deg, #fff1f5 0%, #fffafb 58%),
@@ -374,7 +495,8 @@ section {
 
 @media (max-width: 820px) {
     .counter-grid,
-    .about-layout {
+    .about-layout,
+    .diary-layout {
         grid-template-columns: 1fr;
     }
 
@@ -385,6 +507,10 @@ section {
 
     .timer {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .diary-form {
+        position: static;
     }
 }
 

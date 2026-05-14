@@ -21,6 +21,7 @@
             <div class="hero-actions">
                 <a href="#love-counter" class="btn-primary">Наш час разом</a>
                 <a href="#gallery" class="btn-secondary">Дивитися фото</a>
+                <a href="#diary" class="btn-secondary">Наш щоденник</a>
             </div>
         </div>
     </header>
@@ -76,6 +77,29 @@
                     <p class="signature">
                         Я дуже сильно тебе люблю, моя Дашенька.
                     </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="diary" id="diary">
+            <div class="container">
+                <div class="section-heading">
+                    <p class="eyebrow">щоденник</p>
+                    <h2>Наші спогади</h2>
+                </div>
+                <div class="diary-layout">
+                    <form class="diary-form" id="diary-form">
+                        <label for="memory-text">Спогад</label>
+                        <textarea id="memory-text" rows="6" placeholder="Напиши, що хочеться запам'ятати..." required></textarea>
+
+                        <label for="memory-photo">Фото до спогаду</label>
+                        <input id="memory-photo" type="file" accept="image/*">
+
+                        <button class="btn-primary diary-submit" type="submit">Додати спогад</button>
+                        <p class="diary-hint">Дата і день тижня додадуться автоматично. Фото також з'явиться в загальній галереї.</p>
+                    </form>
+
+                    <div class="diary-list" id="diary-list" aria-live="polite"></div>
                 </div>
             </div>
         </section>

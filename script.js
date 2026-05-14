@@ -103,10 +103,19 @@ const modalImage = document.getElementById("modal-image");
 const closeButton = document.querySelector(".modal-close");
 const prevButton = document.querySelector(".modal-nav.prev");
 const nextButton = document.querySelector(".modal-nav.next");
+const diaryForm = document.getElementById("diary-form");
+const memoryText = document.getElementById("memory-text");
+const memoryPhoto = document.getElementById("memory-photo");
+const diaryList = document.getElementById("diary-list");
+const diaryStorageKey = "ourDiaryEntries";
 let currentIndex = 0;
+let diaryEntries = loadDiaryEntries();
+
+galleryImages.push(...diaryEntries.filter((entry) => entry.photo).map((entry) => entry.photo));
 
 function renderGallery() {
     const fragment = document.createDocumentFragment();
+    galleryGrid.innerHTML = "";
 
     galleryImages.forEach((src, index) => {
         const button = document.createElement("button");
@@ -125,6 +134,125 @@ function renderGallery() {
     });
 
     galleryGrid.appendChild(fragment);
+}
+
+function loadDiaryEntries() {
+    try {
+        const savedEntries = localStorage.getItem(diaryStorageKey);
+        return savedEntries ? JSON.parse(savedEntries) : [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function saveDiaryEntries() {
+    localStorage.setItem(diaryStorageKey, JSON.stringify(diaryEntries));
+}
+
+function formatDiaryDate(dateValue) {
+    return new Intl.DateTimeFormat("uk-UA", {
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+    }).format(new Date(dateValue));
+}
+
+function renderDiary() {
+    diaryList.innerHTML = "";
+
+    if (diaryEntries.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "diary-empty";
+        empty.textContent = "Тут поки немає записів. Додай перший спогад, і він залишиться у цьому браузері.";
+        diaryList.appendChild(empty);
+        return;
+    }
+
+    diaryEntries.forEach((entry) => {
+        const article = document.createElement("article");
+        article.className = "diary-entry";
+
+        if (entry.photo) {
+            const image = document.createElement("img");
+            image.src = entry.photo;
+            image.alt = "Фото зі спогаду";
+            article.appendChild(image);
+        }
+
+        const content = document.createElement("div");
+        content.className = "diary-entry-content";
+
+        const date = document.createElement("p");
+        date.className = "diary-entry-date";
+        date.textContent = formatDiaryDate(entry.createdAt);
+
+        const text = document.createElement("p");
+        text.className = "diary-entry-text";
+        text.textContent = entry.text;
+
+        const actions = document.createElement("div");
+        actions.className = "diary-entry-actions";
+
+        const deleteButton = document.createElement("button");
+        deleteButton.className = "diary-delete";
+        deleteButton.type = "button";
+        deleteButton.textContent = "Видалити";
+        deleteButton.addEventListener("click", () => deleteDiaryEntry(entry.id));
+
+        actions.appendChild(deleteButton);
+        content.append(date, text, actions);
+        article.appendChild(content);
+        diaryList.appendChild(article);
+    });
+}
+
+function deleteDiaryEntry(entryId) {
+    diaryEntries = diaryEntries.filter((entry) => entry.id !== entryId);
+    saveDiaryEntries();
+    syncDiaryPhotosToGallery();
+    renderDiary();
+}
+
+function syncDiaryPhotosToGallery() {
+    const localPhotos = new Set(diaryEntries.filter((entry) => entry.photo).map((entry) => entry.photo));
+    for (let index = galleryImages.length - 1; index >= 0; index -= 1) {
+        if (galleryImages[index].startsWith("data:image/") && !localPhotos.has(galleryImages[index])) {
+            galleryImages.splice(index, 1);
+        }
+    }
+
+    localPhotos.forEach((photo) => {
+        if (!galleryImages.includes(photo)) {
+            galleryImages.unshift(photo);
+        }
+    });
+
+    renderGallery();
+}
+
+function resizeImage(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error("Не вдалося прочитати фото"));
+        reader.onload = () => {
+            const image = new Image();
+            image.onerror = () => reject(new Error("Не вдалося обробити фото"));
+            image.onload = () => {
+                const maxSize = 1600;
+                const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+                const canvas = document.createElement("canvas");
+                canvas.width = Math.round(image.width * scale);
+                canvas.height = Math.round(image.height * scale);
+
+                const context = canvas.getContext("2d");
+                context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                resolve(canvas.toDataURL("image/jpeg", 0.82));
+            };
+            image.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+    });
 }
 
 function openModal(index) {
@@ -184,6 +312,47 @@ document.addEventListener("keydown", (event) => {
     if (event.key === "ArrowRight") showImage(1);
 });
 
+diaryForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const text = memoryText.value.trim();
+    if (!text) {
+        return;
+    }
+
+    const submitButton = diaryForm.querySelector(".diary-submit");
+    submitButton.disabled = true;
+    submitButton.textContent = "Додаю...";
+
+    try {
+        const file = memoryPhoto.files[0];
+        const photo = file ? await resizeImage(file) : "";
+        const entry = {
+            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+            text,
+            photo,
+            createdAt: new Date().toISOString()
+        };
+
+        diaryEntries.unshift(entry);
+        saveDiaryEntries();
+
+        if (photo) {
+            galleryImages.unshift(photo);
+        }
+
+        diaryForm.reset();
+        renderDiary();
+        renderGallery();
+    } catch (error) {
+        alert("Не вдалося додати спогад. Спробуй інше фото або менший файл.");
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "Додати спогад";
+    }
+});
+
 renderGallery();
+renderDiary();
 updateTimers();
 setInterval(updateTimers, 1000);
