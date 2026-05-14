@@ -100,8 +100,41 @@
                         <p class="diary-hint">Дата і день тижня додадуться автоматично. Фото також з'явиться в загальній галереї.</p>
                     </form>
 
-                    <div class="diary-list" id="diary-list" aria-live="polite"></div>
+                    <div class="diary-panel">
+                        <div class="diary-search">
+                            <label for="diary-search">Пошук по щоденнику</label>
+                            <input id="diary-search" type="search" placeholder="Пошук за словами або датою...">
+                        </div>
+                        <div class="memory-calendar">
+                            <div class="calendar-header">
+                                <button type="button" class="calendar-nav" id="calendar-prev" aria-label="Попередній місяць">&#8249;</button>
+                                <h3 id="calendar-title">Місяць</h3>
+                                <button type="button" class="calendar-nav" id="calendar-next" aria-label="Наступний місяць">&#8250;</button>
+                            </div>
+                            <div class="calendar-weekdays" aria-hidden="true">
+                                <span>Пн</span>
+                                <span>Вт</span>
+                                <span>Ср</span>
+                                <span>Чт</span>
+                                <span>Пт</span>
+                                <span>Сб</span>
+                                <span>Нд</span>
+                            </div>
+                            <div class="calendar-grid" id="calendar-grid"></div>
+                        </div>
+                        <div class="diary-list" id="diary-list" aria-live="polite"></div>
+                    </div>
                 </div>
+            </div>
+        </section>
+
+        <section class="favorites" id="favorites">
+            <div class="container">
+                <div class="section-heading">
+                    <p class="eyebrow">улюблене</p>
+                    <h2>Фото з сердечком</h2>
+                </div>
+                <div class="favorites-grid" id="favorites-grid" aria-live="polite"></div>
             </div>
         </section>
 

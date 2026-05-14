@@ -107,13 +107,23 @@ const diaryForm = document.getElementById("diary-form");
 const memoryText = document.getElementById("memory-text");
 const memoryPhoto = document.getElementById("memory-photo");
 const diaryList = document.getElementById("diary-list");
+const diarySearch = document.getElementById("diary-search");
+const calendarGrid = document.getElementById("calendar-grid");
+const calendarTitle = document.getElementById("calendar-title");
+const calendarPrev = document.getElementById("calendar-prev");
+const calendarNext = document.getElementById("calendar-next");
+const favoritesGrid = document.getElementById("favorites-grid");
 const photoUploadForm = document.getElementById("add-photo");
 const galleryPhotoInput = document.getElementById("gallery-photo");
 const uploadStatus = document.getElementById("upload-status");
 const diaryStorageKey = "ourDiaryEntries";
 const galleryStorageKey = "ourGalleryUploads";
+const favoritesStorageKey = "ourFavoritePhotos";
 let currentIndex = 0;
 let diaryEntries = loadDiaryEntries();
+let favoritePhotos = loadFavoritePhotos();
+let calendarDate = new Date();
+let selectedCalendarDate = "";
 
 galleryImages.push(...loadLocalGalleryPhotos());
 galleryImages.push(...diaryEntries.filter((entry) => entry.photo).map((entry) => entry.photo));
@@ -133,7 +143,18 @@ function renderGallery() {
         image.alt = `Фото ${index + 1}`;
         image.loading = "lazy";
 
+        const favoriteButton = document.createElement("button");
+        favoriteButton.className = `favorite-toggle${favoritePhotos.includes(src) ? " is-active" : ""}`;
+        favoriteButton.type = "button";
+        favoriteButton.setAttribute("aria-label", "Додати в улюблені");
+        favoriteButton.textContent = "♡";
+        favoriteButton.addEventListener("click", (event) => {
+            event.stopPropagation();
+            toggleFavorite(src);
+        });
+
         button.appendChild(image);
+        button.appendChild(favoriteButton);
         button.addEventListener("click", () => openModal(index));
         fragment.appendChild(button);
     });
@@ -157,6 +178,19 @@ function loadLocalGalleryPhotos() {
     } catch (error) {
         return [];
     }
+}
+
+function loadFavoritePhotos() {
+    try {
+        const savedPhotos = localStorage.getItem(favoritesStorageKey);
+        return savedPhotos ? JSON.parse(savedPhotos) : [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function saveFavoritePhotos() {
+    localStorage.setItem(favoritesStorageKey, JSON.stringify(favoritePhotos));
 }
 
 function saveLocalGalleryPhotos(photos) {
@@ -241,17 +275,27 @@ function formatDiaryDate(dateValue) {
 }
 
 function renderDiary() {
+    const query = diarySearch.value.trim().toLowerCase();
+    const filteredEntries = diaryEntries.filter((entry) => {
+        const formattedDate = formatDiaryDate(entry.createdAt).toLowerCase();
+        const matchesSearch = !query || entry.text.toLowerCase().includes(query) || formattedDate.includes(query);
+        const matchesDate = !selectedCalendarDate || toDateKey(entry.createdAt) === selectedCalendarDate;
+        return matchesSearch && matchesDate;
+    });
+
     diaryList.innerHTML = "";
 
-    if (diaryEntries.length === 0) {
+    if (filteredEntries.length === 0) {
         const empty = document.createElement("p");
         empty.className = "diary-empty";
-        empty.textContent = "Тут поки немає записів. Додай перший спогад, і він залишиться у цьому браузері.";
+        empty.textContent = diaryEntries.length === 0
+            ? "Тут поки немає записів. Додай перший спогад, і він залишиться тут."
+            : "За цим пошуком або датою спогадів не знайдено.";
         diaryList.appendChild(empty);
         return;
     }
 
-    diaryEntries.forEach((entry) => {
+    filteredEntries.forEach((entry) => {
         const article = document.createElement("article");
         article.className = "diary-entry";
 
@@ -289,6 +333,101 @@ function renderDiary() {
     });
 }
 
+function renderCalendar() {
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+    const monthName = new Intl.DateTimeFormat("uk-UA", { month: "long", year: "numeric" }).format(calendarDate);
+    const firstDay = new Date(year, month, 1);
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const offset = (firstDay.getDay() + 6) % 7;
+    const memoryDates = new Set(diaryEntries.map((entry) => toDateKey(entry.createdAt)));
+
+    calendarTitle.textContent = monthName;
+    calendarGrid.innerHTML = "";
+
+    for (let index = 0; index < offset; index += 1) {
+        calendarGrid.appendChild(document.createElement("span"));
+    }
+
+    for (let day = 1; day <= daysInMonth; day += 1) {
+        const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        const button = document.createElement("button");
+        button.className = "calendar-day";
+        button.type = "button";
+        button.textContent = day;
+
+        if (memoryDates.has(dateKey)) {
+            button.classList.add("has-memory");
+            button.addEventListener("click", () => {
+                selectedCalendarDate = selectedCalendarDate === dateKey ? "" : dateKey;
+                renderCalendar();
+                renderDiary();
+            });
+        }
+
+        if (selectedCalendarDate === dateKey) {
+            button.classList.add("is-selected");
+        }
+
+        calendarGrid.appendChild(button);
+    }
+}
+
+function toDateKey(dateValue) {
+    const date = new Date(dateValue);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function toggleFavorite(src) {
+    if (favoritePhotos.includes(src)) {
+        favoritePhotos = favoritePhotos.filter((photo) => photo !== src);
+    } else {
+        favoritePhotos.unshift(src);
+    }
+
+    saveFavoritePhotos();
+    renderGallery();
+    renderFavorites();
+}
+
+function renderFavorites() {
+    favoritesGrid.innerHTML = "";
+
+    const visibleFavorites = favoritePhotos.filter((src) => galleryImages.includes(src));
+    if (visibleFavorites.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "favorite-empty";
+        empty.textContent = "Натисни сердечко на фото, і воно з'явиться тут.";
+        favoritesGrid.appendChild(empty);
+        return;
+    }
+
+    visibleFavorites.forEach((src) => {
+        const index = galleryImages.indexOf(src);
+        const button = document.createElement("button");
+        button.className = "gallery-item";
+        button.type = "button";
+
+        const image = document.createElement("img");
+        image.src = src;
+        image.alt = "Улюблене фото";
+        image.loading = "lazy";
+
+        const favoriteButton = document.createElement("button");
+        favoriteButton.className = "favorite-toggle is-active";
+        favoriteButton.type = "button";
+        favoriteButton.textContent = "♡";
+        favoriteButton.addEventListener("click", (event) => {
+            event.stopPropagation();
+            toggleFavorite(src);
+        });
+
+        button.append(image, favoriteButton);
+        button.addEventListener("click", () => openModal(index));
+        favoritesGrid.appendChild(button);
+    });
+}
+
 async function deleteDiaryEntry(entryId) {
     try {
         await fetch(`/api/diary/${entryId}`, { method: "DELETE" });
@@ -317,6 +456,7 @@ function syncDiaryPhotosToGallery() {
     });
 
     renderGallery();
+    renderFavorites();
 }
 
 function resizeImage(file) {
@@ -469,8 +609,10 @@ diaryForm.addEventListener("submit", async (event) => {
         }
 
         diaryForm.reset();
+        renderCalendar();
         renderDiary();
         renderGallery();
+        renderFavorites();
     } catch (error) {
         alert("Не вдалося додати спогад. Спробуй інше фото або менший файл.");
     } finally {
@@ -482,9 +624,21 @@ diaryForm.addEventListener("submit", async (event) => {
 async function initializeSite() {
     await loadServerData();
     renderGallery();
+    renderFavorites();
+    renderCalendar();
     renderDiary();
     updateTimers();
     setInterval(updateTimers, 1000);
 }
+
+diarySearch.addEventListener("input", renderDiary);
+calendarPrev.addEventListener("click", () => {
+    calendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1);
+    renderCalendar();
+});
+calendarNext.addEventListener("click", () => {
+    calendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1);
+    renderCalendar();
+});
 
 initializeSite();
